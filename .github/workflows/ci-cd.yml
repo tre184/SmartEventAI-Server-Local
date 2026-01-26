@@ -10,7 +10,7 @@ on:
 jobs:
   # BUILD (tous les builds dans un seul job logique)
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -61,7 +61,7 @@ jobs:
 
   # TEST (tous les tests dans un seul job)
   test:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -101,7 +101,7 @@ jobs:
   # ANALYZE (Semgrep et SonarQube)
   analyze_semgrep:
     name: analyze_semgrep
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: test
     steps:
       - name: Checkout repository
@@ -118,7 +118,7 @@ jobs:
 
   analyze_sonar:
     name: analyze_sonar
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: test
     continue-on-error: true
     steps:
@@ -271,7 +271,7 @@ jobs:
 
   # DOCKER BUILD & PUSH
   docker-build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs:
       - analyze_semgrep
       - analyze_sonar
