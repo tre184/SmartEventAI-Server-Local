@@ -10,7 +10,7 @@ on:
 jobs:
   # BUILD (tous les builds dans un seul job logique)
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
 
@@ -61,7 +61,7 @@ jobs:
 
   # TEST (tous les tests dans un seul job)
   test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -101,7 +101,7 @@ jobs:
   # ANALYZE (Semgrep et SonarQube)
   analyze_semgrep:
     name: analyze_semgrep
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: test
     steps:
       - name: Checkout repository
@@ -118,7 +118,7 @@ jobs:
 
   analyze_sonar:
     name: analyze_sonar
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: test
     continue-on-error: true
     steps:
@@ -271,7 +271,7 @@ jobs:
 
   # DOCKER BUILD & PUSH
   docker-build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - analyze_semgrep
       - analyze_sonar
@@ -296,32 +296,17 @@ jobs:
 
   # DEPLOY
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: docker-build
     steps:
       - uses: actions/checkout@v4
 
-      - name: Debug files to copy
+      - name: Sync infra files locally
         run: |
-          pwd
-          ls -la
-          ls -la docker-compose.yml || true
-          ls -la docker-compose.prod.yml || true
-          ls -la docker/postgres/init.sql || true
-          ls -la config-repo || true
-          find config-repo -maxdepth 2 -type f -print || true
-
-
-      - name: Copy infra files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: |
-            docker-compose.yml,docker-compose.prod.yml,docker/postgres/init.sql,config-repo/**
-          target: /home/tresor/smartevent-ia-infra
-          overwrite: true
+          sudo mkdir -p /home/tresor/smartevent-ia-infra
+          sudo rsync -a --delete \
+            docker-compose.yml docker-compose.prod.yml docker/ config-repo/ \
+            /home/tresor/smartevent-ia-infra/
           
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1
