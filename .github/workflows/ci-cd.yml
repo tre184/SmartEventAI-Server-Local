@@ -301,6 +301,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug files to copy
+        run: |
+          pwd
+          ls -la
+          ls -la docker-compose.yml || true
+          ls -la docker-compose.prod.yml || true
+          ls -la docker/postgres/init.sql || true
+          ls -la config-repo || true
+          find config-repo -maxdepth 2 -type f -print || true
+
+
       - name: Copy infra files to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -308,10 +319,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           source: |
-            docker-compose.yml
-            docker-compose.prod.yml
-            docker/postgres/init.sql
-            config-repo/**
+            docker-compose.yml,docker-compose.prod.yml,docker/postgres/init.sql,config-repo/**
           target: /home/tresor/smartevent-ia-infra
           overwrite: true
           
@@ -326,3 +334,4 @@ jobs:
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile ui up -d --remove-orphans
             docker ps
+            
