@@ -315,12 +315,27 @@ jobs:
       
       - name: Sync infra files locally
         run: |
-          rsync -av \
-          "$SRC/docker-compose.yml" \
-          "$SRC/docker-compose.prod.yml" \
-          "$SRC/docker/" \
-          "$SRC/config-repo/" \
-          "$DST/"
+          set -euxo pipefail
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          ls -la "$GITHUB_WORKSPACE"
+
+          SRC="$GITHUB_WORKSPACE"
+          DST="/home/tresor/smartevent-ia-infra"
+
+          test -f "$SRC/docker-compose.yml"
+          test -f "$SRC/docker-compose.prod.yml"
+          test -d "$SRC/docker"
+          test -d "$SRC/config-repo"
+
+          sudo mkdir -p "$DST"
+          sudo chown -R tresor:tresor "$DST"
+
+          rsync -av --delete \
+            "$SRC/docker-compose.yml" \
+            "$SRC/docker-compose.prod.yml" \
+            "$SRC/docker/" \
+            "$SRC/config-repo/" \
+            "$DST/"
       
       - name: Login to GHCR
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u tre184 --password-stdin
