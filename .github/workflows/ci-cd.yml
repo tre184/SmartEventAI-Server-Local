@@ -294,6 +294,17 @@ jobs:
       - name: Push images
         run: docker compose -f docker-compose.yml -f docker-compose.prod.yml push
 
+      - name: Build images (core + ui)
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml build
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml build front frontadmin
+
+      - name: Push images (core + ui)
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml push
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml push front frontadmin
+
+
 
   # DEPLOY
   deploy:

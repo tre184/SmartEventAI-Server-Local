@@ -18,7 +18,7 @@ services:
       retries: 20
 
   eureka-server:
-    image: ghcr.io/tre184/smarteventai-server-local-eureka-server:dev
+    image: ghcr.io/tre184/smarteventai-server-local-eureka-server:<tag>
     build: null
     container_name: smartevent_eureka
     ports:
@@ -34,7 +34,7 @@ services:
       retries: 30
 
   config-server:
-    image: ghcr.io/tre184/smarteventai-server-local-config-server:dev
+    image: ghcr.io/tre184/smarteventai-server-local-config-server:<tag>
     build: null
     container_name: smartevent_config
     ports:
@@ -58,7 +58,7 @@ services:
       retries: 30
 
   auth-service:
-    image: ghcr.io/tre184/smarteventai-server-local-auth-service:dev
+    image: ghcr.io/tre184/smarteventai-server-local-auth-service:<tag>
     build: null
     container_name: smartevent_auth
     ports:
@@ -85,7 +85,7 @@ services:
       retries: 30
 
   event-service:
-    image: ghcr.io/tre184/smarteventai-server-local-event-service:dev
+    image: ghcr.io/tre184/smarteventai-server-local-event-service:<tag>
     build: null
     container_name: smartevent_event
     ports:
@@ -112,7 +112,7 @@ services:
       retries: 30
 
   ai-service:
-    image: ghcr.io/tre184/smarteventai-server-local-ai-service:dev
+    image: ghcr.io/tre184/smarteventai-server-local-ai-service:<tag>
     build: null
     container_name: smartevent_ai
     ports:
@@ -137,7 +137,7 @@ services:
       retries: 30
 
   workflow-service:
-    image: ghcr.io/tre184/smarteventai-server-local-workflow-service:dev
+    image: ghcr.io/tre184/smarteventai-server-local-workflow-service:<tag>
     build: null
     container_name: smartevent_workflow
     ports:
@@ -165,7 +165,7 @@ services:
       retries: 30
 
   gateway-service:
-    image: ghcr.io/tre184/smarteventai-server-local-gateway-service:dev
+    image: ghcr.io/tre184/smarteventai-server-local-gateway-service:<tag>
     build: null
     container_name: smartevent_gateway
     ports:
@@ -206,7 +206,7 @@ services:
 
   # UI (optionnel). Active avec: docker compose --profile ui up
   front:
-    image: ghcr.io/tre184/smarteventai-server-local-front:dev
+    image: ghcr.io/tre184/smarteventai-server-local-front:<tag>
     build: null
     profiles: ["ui"]
     container_name: smartevent_front
@@ -217,7 +217,7 @@ services:
         condition: service_healthy
 
   frontadmin:
-    image: ghcr.io/tre184/smarteventai-server-local-frontadmin:dev
+    image: ghcr.io/tre184/smarteventai-server-local-frontadmin:<tag>
     build: null
     profiles: ["ui"]
     container_name: smartevent_front_admin
