@@ -312,12 +312,7 @@ jobs:
     needs: docker-build
     steps:
       - uses: actions/checkout@v4
-
-      - name: Ensure infra dir writable
-        run: |
-          sudo mkdir -p /home/tresor/smartevent-ia-infra
-          sudo chown -R tresor:tresor /home/tresor/smartevent-ia-infra
-
+      
       - name: Sync infra files locally
         run: |
           set -euxo pipefail
