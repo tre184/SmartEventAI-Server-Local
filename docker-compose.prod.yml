@@ -18,7 +18,7 @@ services:
       retries: 20
 
   eureka-server:
-    image: ghcr.io/mibg/smarteventai-server-local-eureka-server:dev
+    image: ghcr.io/tre184/smarteventai-server-local-eureka-server:dev
     container_name: smartevent_eureka
     ports:
       - "8761:8761"
@@ -33,7 +33,7 @@ services:
       retries: 30
 
   config-server:
-    image: ghcr.io/mibg/smarteventai-server-local-config-server:dev
+    image: ghcr.io/tre184/smarteventai-server-local-config-server:dev
     container_name: smartevent_config
     ports:
       - "8888:8888"
@@ -56,7 +56,7 @@ services:
       retries: 30
 
   auth-service:
-    image: ghcr.io/mibg/smarteventai-server-local-auth-service:dev
+    image: ghcr.io/tre184/smarteventai-server-local-auth-service:dev
     container_name: smartevent_auth
     ports:
       - "8091:8091"
@@ -82,7 +82,7 @@ services:
       retries: 30
 
   event-service:
-    image: ghcr.io/mibg/smarteventai-server-local-event-service:dev
+    image: ghcr.io/tre184/smarteventai-server-local-event-service:dev
     container_name: smartevent_event
     ports:
       - "8090:8090"
@@ -108,7 +108,7 @@ services:
       retries: 30
 
   ai-service:
-    image: ghcr.io/mibg/smarteventai-server-local-ai-service:dev
+    image: ghcr.io/tre184/smarteventai-server-local-ai-service:dev
     container_name: smartevent_ai
     ports:
       - "8000:8000"
@@ -132,7 +132,7 @@ services:
       retries: 30
 
   workflow-service:
-    image: ghcr.io/mibg/smarteventai-server-local-workflow-service:dev
+    image: ghcr.io/tre184/smarteventai-server-local-workflow-service:dev
     container_name: smartevent_workflow
     ports:
       - "3000:3000"
@@ -159,7 +159,7 @@ services:
       retries: 30
 
   gateway-service:
-    image: ghcr.io/mibg/smarteventai-server-local-gateway-service:dev
+    image: ghcr.io/tre184/smarteventai-server-local-gateway-service:dev
     container_name: smartevent_gateway
     ports:
       - "8080:8080"
@@ -209,7 +209,7 @@ services:
         condition: service_healthy
 
   frontadmin:
-    image: ghcr.io/mibg/smarteventai-server-local-frontadmin:dev
+    image: ghcr.io/tre184/smarteventai-server-local-frontadmin:dev
     profiles: ["ui"]
     container_name: smartevent_front_admin
     ports:
