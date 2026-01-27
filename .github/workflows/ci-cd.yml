@@ -315,17 +315,12 @@ jobs:
       
       - name: Sync infra files locally
         run: |
-          set -euxo pipefail
-          mkdir -p /home/tresor/smartevent-ia-infra
-          rsync -a --delete \
-            docker-compose.yml docker-compose.prod.yml docker/ config-repo/ \
-            /home/tresor/smartevent-ia-infra/
-
-      - name: Verify infra sync
-        run: |
-          set -eux
-          ls -la /home/tresor/smartevent-ia-infra
-          ls -la /home/tresor/smartevent-ia-infra/config-repo
+          rsync -av \
+          "$SRC/docker-compose.yml" \
+          "$SRC/docker-compose.prod.yml" \
+          "$SRC/docker/" \
+          "$SRC/config-repo/" \
+          "$DST/"
       
       - name: Login to GHCR
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u tre184 --password-stdin
