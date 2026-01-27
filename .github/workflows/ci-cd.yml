@@ -316,19 +316,10 @@ jobs:
       - name: Sync infra files locally
         run: |
           set -euxo pipefail
-          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-          ls -la "$GITHUB_WORKSPACE"
-
           SRC="$GITHUB_WORKSPACE"
           DST="/home/tresor/smartevent-ia-infra"
 
-          test -f "$SRC/docker-compose.yml"
-          test -f "$SRC/docker-compose.prod.yml"
-          test -d "$SRC/docker"
-          test -d "$SRC/config-repo"
-
-          sudo mkdir -p "$DST"
-          sudo chown -R tresor:tresor "$DST"
+          mkdir -p "$DST"
 
           rsync -av --delete \
             "$SRC/docker-compose.yml" \
@@ -347,7 +338,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd /home/tresor/smartevent-ia-infra
+            cd "$HOME/tresor/smartevent-ia-infra"
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile ui up -d --remove-orphans
             docker ps
