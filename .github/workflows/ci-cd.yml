@@ -302,6 +302,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug workspace
+        run: |
+          echo "PWD=$(pwd)"
+          ls -la
+          ls -la docker || true
+          ls -la config-repo || true
+          find docker -maxdepth 3 -type f -print || true
+          find config-repo -maxdepth 2 -type f -print || true
+
       - name: Sync infra files locally
         run: |
           mkdir -p /home/tresor/smartevent-ia-infra
