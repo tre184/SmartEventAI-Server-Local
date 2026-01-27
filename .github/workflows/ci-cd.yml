@@ -319,14 +319,23 @@ jobs:
           SRC="$GITHUB_WORKSPACE"
           DST="/home/tresor/smartevent-ia-infra"
 
-          mkdir -p "$DST"
+          mkdir -p "$DST" "$DST/docker" "$DST/config-repo"
 
+          # fichiers compose à la racine
           rsync -av --delete \
             "$SRC/docker-compose.yml" \
             "$SRC/docker-compose.prod.yml" \
-            "$SRC/docker/" \
-            "$SRC/config-repo/" \
             "$DST/"
+
+          # dossier docker -> $DST/docker
+          rsync -av --delete \
+            "$SRC/docker/" \
+            "$DST/docker/"
+
+          # dossier config-repo -> $DST/config-repo
+          rsync -av --delete \
+            "$SRC/config-repo/" \
+            "$DST/config-repo/"
       
       - name: Login to GHCR
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u tre184 --password-stdin
