@@ -303,8 +303,8 @@ jobs:
 
       - name: Sync infra files locally
         run: |
-          sudo mkdir -p /home/tresor/smartevent-ia-infra
-          sudo rsync -a --delete \
+          mkdir -p /home/tresor/smartevent-ia-infra
+          rsync -a --delete \
             docker-compose.yml docker-compose.prod.yml docker/ config-repo/ \
             /home/tresor/smartevent-ia-infra/
           
