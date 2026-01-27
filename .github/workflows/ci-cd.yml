@@ -289,10 +289,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build images
-        run: docker compose -f docker-compose.yml build
+        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml build
 
       - name: Push images
-        run: docker compose -f docker-compose.yml push
+        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml push
+
 
   # DEPLOY
   deploy:
@@ -307,7 +308,10 @@ jobs:
           rsync -a --delete \
             docker-compose.yml docker-compose.prod.yml docker/ config-repo/ \
             /home/tresor/smartevent-ia-infra/
-          
+      
+      - name: Login to GHCR
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u tre184 --password-stdin
+
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1
         with:
