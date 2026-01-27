@@ -7,6 +7,9 @@ on:
     branches: [dev]
   workflow_dispatch: {}
 
+env:
+  IMAGE_TAG: dev-${{ github.sha }}
+
 jobs:
   # BUILD (tous les builds dans un seul job logique)
   build:
@@ -296,11 +299,13 @@ jobs:
 
       - name: Build images (core + ui)
         run: |
+          export IMAGE_TAG=dev-${GITHUB_SHA}
           docker compose -f docker-compose.yml -f docker-compose.prod.yml build
           docker compose -f docker-compose.yml -f docker-compose.prod.yml build front frontadmin
 
       - name: Push images (core + ui)
         run: |
+          export IMAGE_TAG=dev-${GITHUB_SHA}
           docker compose -f docker-compose.yml -f docker-compose.prod.yml push
           docker compose -f docker-compose.yml -f docker-compose.prod.yml push front frontadmin
 
@@ -312,6 +317,12 @@ jobs:
     needs: docker-build
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cleanup runner disk
+        run: |
+          docker system prune -af || true
+          rm -rf "$RUNNER_WORKSPACE"/* || true
+          rm -rf /home/tresor/actions-runner/_diag/* || true
       
       - name: Sync infra files locally
         run: |
