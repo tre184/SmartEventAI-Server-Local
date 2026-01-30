@@ -325,10 +325,50 @@ jobs:
           docker system prune -af || true
           rm -rf "$RUNNER_WORKSPACE"/* || true
           rm -rf /home/tresor/actions-runner/_diag/* || true
-      
 
+      - name: Sync infra files locally
+        run: |
+          set -euxo pipefail
 
+          whoami
+          id
+          sudo -n true
+          sudo -n -l || true
 
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          ls -la "$GITHUB_WORKSPACE" | head -200
+          ls -la "$GITHUB_WORKSPACE/docker-compose.yml" || true
+          ls -la "$GITHUB_WORKSPACE/docker-compose.prod.yml" || true
+          ls -la "$GITHUB_WORKSPACE/docker" || true
+          ls -la "$GITHUB_WORKSPACE/config-repo" || true
+
+          command -v rsync
+          df -h
+
+          SRC="$GITHUB_WORKSPACE"
+          DST="/home/tresor/smartevent-ia-infra"
+
+          sudo mkdir -p "$DST" "$DST/docker" "$DST/config-repo"
+
+          echo "Cleaning $DST root *.properties + root nginx/postgres..."
+          find "$DST" -maxdepth 1 -type f -name "*.properties" -delete || true
+          sudo rm -rf "$DST/nginx" "$DST/postgres" || true
+
+          echo "Rsync compose files..."
+          timeout 60 rsync -av --info=progress2 \
+            "$SRC/docker-compose.yml" \
+            "$SRC/docker-compose.prod.yml" \
+            "$DST/"
+
+          echo "Rsync docker/ ..."
+          timeout 180 rsync -av --delete --info=progress2 \
+            "$SRC/docker/" \
+            "$DST/docker/"
+
+          echo "Rsync config-repo/ ..."
+          timeout 180 rsync -av --delete --info=progress2 \
+            "$SRC/config-repo/" \
+            "$DST/config-repo/"
       
       - name: Login to GHCR
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u tre184 --password-stdin
