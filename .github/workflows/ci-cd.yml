@@ -327,7 +327,16 @@ jobs:
           rm -rf /home/tresor/actions-runner/_diag/* || true
 
       - name: Install rsync
-        run: sudo apt-get update && sudo apt-get install -y rsync
+        run: |
+          set -euxo pipefail
+          if command -v rsync >/dev/null 2>&1; then
+            rsync --version
+            exit 0
+          fi
+          sudo -n true
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y rsync
+          rsync --version
       
       - name: Sync infra files locally
         run: |
