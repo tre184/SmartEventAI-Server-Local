@@ -7,13 +7,13 @@ on:
     branches: [dev]
   workflow_dispatch: {}
 
-env:
-  IMAGE_TAG: dev-${{ github.sha }}
-
 jobs:
   # BUILD (tous les builds dans un seul job logique)
   build:
     runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: dev-${{ github.sha }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -275,12 +275,12 @@ jobs:
   # DOCKER BUILD & PUSH
   docker-build:
     runs-on: ubuntu-latest
-    needs:
-      - analyze_semgrep
-      - analyze_sonar
+    needs: [analyze_semgrep, analyze_sonar]
     permissions:
       contents: read
       packages: write
+    env:
+      IMAGE_TAG: dev-${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -291,23 +291,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build images
-        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml build
-
-      - name: Push images
-        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml push
-
       - name: Build images (core + ui)
         run: |
-          export IMAGE_TAG=dev-${GITHUB_SHA}
-          docker compose -f docker-compose.yml -f docker-compose.prod.yml build
-          docker compose -f docker-compose.yml -f docker-compose.prod.yml build front frontadmin
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml build --pull
+          
+      - name: Tag also as "dev"
+        run: |
+          # tag "dev" en plus du tag unique
+          export IMAGE_TAG=dev
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml build --pull
 
       - name: Push images (core + ui)
         run: |
           export IMAGE_TAG=dev-${GITHUB_SHA}
           docker compose -f docker-compose.yml -f docker-compose.prod.yml push
-          docker compose -f docker-compose.yml -f docker-compose.prod.yml push front frontadmin
+          export IMAGE_TAG=dev
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml push 
 
 
 
@@ -315,6 +314,9 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: docker-build
+    env:
+      IMAGE_TAG: dev-${{ github.sha }}
+
     steps:
       - uses: actions/checkout@v4
 
