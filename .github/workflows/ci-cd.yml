@@ -325,18 +325,6 @@ jobs:
           docker system prune -af || true
           rm -rf "$RUNNER_WORKSPACE"/* || true
           rm -rf /home/tresor/actions-runner/_diag/* || true
-
-      - name: Install rsync
-        run: |
-          set -euxo pipefail
-          if command -v rsync >/dev/null 2>&1; then
-            rsync --version
-            exit 0
-          fi
-          sudo -n true
-          sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y rsync
-          rsync --version
       
       - name: Sync infra files locally
         run: |
@@ -360,11 +348,11 @@ jobs:
           SRC="$GITHUB_WORKSPACE"
           DST="/home/tresor/smartevent-ia-infra"
 
-          sudo mkdir -p "$DST"
+          mkdir -p "$DST"
           find "$DST" -maxdepth 1 -type f -name "*.properties" -delete || true
           rm -rf "$DST/nginx" "$DST/postgres" || true
 
-          sudo mkdir -p "$DST/docker" "$DST/config-repo"
+          mkdir -p "$DST/docker" "$DST/config-repo"
 
           rsync -av \
             "$SRC/docker-compose.yml" \
