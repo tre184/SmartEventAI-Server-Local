@@ -326,46 +326,7 @@ jobs:
           rm -rf "$RUNNER_WORKSPACE"/* || true
           rm -rf /home/tresor/actions-runner/_diag/* || true
       
-      - name: Sync infra files locally
-        run: |
-          set -euxo pipefail
-          whoami
-          id
-          sudo -l
-          echo "=== DEBUG ==="
-          ls -la "$GITHUB_WORKSPACE"
-          ls -la "$GITHUB_WORKSPACE/docker-compose.prod.yml" || true
-          ls -la "$GITHUB_WORKSPACE/docker-compose.yml" || true
-          ls -la "$GITHUB_WORKSPACE/docker" || true
-          ls -la "$GITHUB_WORKSPACE/config-repo" || true
-          echo "============="
-          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-          ls -la "$GITHUB_WORKSPACE"
-          which rsync || true
-          ls -la /home/tresor || true
-          ls -la /home/tresor/smartevent-ia-infra || true
 
-          SRC="$GITHUB_WORKSPACE"
-          DST="/home/tresor/smartevent-ia-infra"
-
-          sudo mkdir -p "$DST"
-          find "$DST" -maxdepth 1 -type f -name "*.properties" -delete || true
-          sudo rm -rf "$DST/nginx" "$DST/postgres" || true
-
-          sudo mkdir -p "$DST/docker" "$DST/config-repo"
-
-          rsync -av \
-            "$SRC/docker-compose.yml" \
-            "$SRC/docker-compose.prod.yml" \
-            "$DST/"
-
-          rsync -av --delete \
-            "$SRC/docker/" \
-            "$DST/docker/"
-
-          rsync -av --delete \
-            "$SRC/config-repo/" \
-            "$DST/config-repo/"
 
 
       
