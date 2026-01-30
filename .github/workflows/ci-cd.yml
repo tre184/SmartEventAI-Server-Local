@@ -332,10 +332,14 @@ jobs:
           SRC="$GITHUB_WORKSPACE"
           DST="/home/tresor/smartevent-ia-infra"
 
-          mkdir -p "$DST" "$DST/docker" "$DST/config-repo"
+          mkdir -p "$DST" 
+          rm -f "$DST/"*.properties || true
+          rm -rf "$DST/nginx" "$DST/postgres" || true
+
+          mkdir -p "$DST/docker" "$DST/config-repo"
 
           # fichiers compose à la racine
-          rsync -av --delete \
+          rsync -av \
             "$SRC/docker-compose.yml" \
             "$SRC/docker-compose.prod.yml" \
             "$DST/"
