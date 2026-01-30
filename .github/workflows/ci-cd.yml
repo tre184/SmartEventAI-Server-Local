@@ -348,11 +348,11 @@ jobs:
           SRC="$GITHUB_WORKSPACE"
           DST="/home/tresor/smartevent-ia-infra"
 
-          mkdir -p "$DST"
+          sudo mkdir -p "$DST"
           find "$DST" -maxdepth 1 -type f -name "*.properties" -delete || true
-          rm -rf "$DST/nginx" "$DST/postgres" || true
+          sudo rm -rf "$DST/nginx" "$DST/postgres" || true
 
-          mkdir -p "$DST/docker" "$DST/config-repo"
+          sudo mkdir -p "$DST/docker" "$DST/config-repo"
 
           rsync -av \
             "$SRC/docker-compose.yml" \
