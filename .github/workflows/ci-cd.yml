@@ -327,55 +327,51 @@ jobs:
           rm -rf /home/tresor/actions-runner/_diag/* || true
 
       - name: Sync infra files locally
+        shell: bash
         run: |
           set -euxo pipefail
-
-          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-          ls -la "$GITHUB_WORKSPACE" | head -200
-          ls -la "$GITHUB_WORKSPACE/docker-compose.yml" || true
-          ls -la "$GITHUB_WORKSPACE/docker-compose.prod.yml" || true
-          ls -la "$GITHUB_WORKSPACE/docker" || true
-          ls -la "$GITHUB_WORKSPACE/config-repo" || true
-
-          command -v rsync
-          df -h
-
           SRC="$GITHUB_WORKSPACE"
-          DST="/home/tresor/smartevent-ia-infra"
+          VM_USER="${{ secrets.DEPLOY_USER }}"
+          VM_HOST="${{ secrets.DEPLOY_HOST }}"
+          VM_DST="/home/tresor/smartevent-ia-infra"
+          KEY_FILE=~/.ssh/deploy_key
 
-          mkdir -p "$DST" "$DST/docker" "$DST/config-repo"
+          # Prépare les dossiers sur la VM
+          ssh -i "$KEY_FILE" "$VM_USER@$VM_HOST" "mkdir -p '$VM_DST/docker' '$VM_DST/config-repo'"
 
-          echo "Cleaning $DST root *.properties + root nginx/postgres..."
-          find "$DST" -maxdepth 1 -type f -name "*.properties" -delete || true
-          rm -rf "$DST/nginx" "$DST/postgres" || true
-
-          echo "Rsync compose files..."
-          timeout 60 rsync -av --info=progress2 \
+          # Compose à la racine
+          rsync -avz --delete -e "ssh -i $KEY_FILE" \
             "$SRC/docker-compose.yml" \
             "$SRC/docker-compose.prod.yml" \
-            "$DST/"
+            "$VM_USER@$VM_HOST:$VM_DST/"
 
-          echo "Rsync docker/ ..."
-          timeout 180 rsync -av --delete --info=progress2 \
+          # docker/ (nginx, postgres) -> VM_DST/docker
+          rsync -avz --delete -e "ssh -i $KEY_FILE" \
             "$SRC/docker/" \
-            "$DST/docker/"
+            "$VM_USER@$VM_HOST:$VM_DST/docker/"
 
-          echo "Rsync config-repo/ ..."
-          timeout 180 rsync -av --delete --info=progress2 \
+          # config-repo/ -> VM_DST/config-repo (tous les *.properties)
+          rsync -avz --delete -e "ssh -i $KEY_FILE" \
             "$SRC/config-repo/" \
-            "$DST/config-repo/"
+            "$VM_USER@$VM_HOST:$VM_DST/config-repo/"
       
       - name: Login to GHCR
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u tre184 --password-stdin
 
-      - name: Deploy over SSH
+      - name: Deploy on VM (pull from GHCR)
         uses: appleboy/ssh-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd "$HOME/tresor/smartevent-ia-infra"
+            set -euxo pipefail
+
+            # Login GHCR sur la VM
+            echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            cd "$HOME/smartevent-ia-infra"
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile ui up -d --remove-orphans
             docker ps
