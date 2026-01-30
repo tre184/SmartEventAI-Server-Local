@@ -326,7 +326,43 @@ jobs:
           rm -rf "$RUNNER_WORKSPACE"/* || true
           rm -rf /home/tresor/actions-runner/_diag/* || true
       
-      
+      - name: Sync infra files locally
+    run: |
+      set -euxo pipefail
+      whoami
+      id
+      pwd
+      echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+      ls -la "$GITHUB_WORKSPACE"
+      which rsync || true
+      ls -la /home/tresor || true
+      ls -la /home/tresor/smartevent-ia-infra || true
+
+      SRC="$GITHUB_WORKSPACE"
+      DST="/home/tresor/smartevent-ia-infra"
+
+      mkdir -p "$DST"
+      rm -f "$DST/"*.properties || true
+      rm -rf "$DST/nginx" "$DST/postgres" || true
+
+      mkdir -p "$DST/docker" "$DST/config-repo"
+
+      # fichiers compose à la racine
+      rsync -av \
+        "$SRC/docker-compose.yml" \
+        "$SRC/docker-compose.prod.yml" \
+        "$DST/"
+
+      # dossier docker -> $DST/docker
+      rsync -av --delete \
+        "$SRC/docker/" \
+        "$DST/docker/"
+
+      # dossier config-repo -> $DST/config-repo
+      rsync -av --delete \
+        "$SRC/config-repo/" \
+        "$DST/config-repo/"
+
       
       - name: Login to GHCR
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u tre184 --password-stdin
@@ -338,7 +374,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd "$HOME/tresor/smartevent-ia-infra"
+            cd "$HOME/smartevent-ia-infra"
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile ui up -d --remove-orphans
             docker ps
