@@ -342,26 +342,24 @@ jobs:
           DST="/home/tresor/smartevent-ia-infra"
 
           mkdir -p "$DST"
-          rm -f "$DST/"*.properties || true
+          find "$DST" -maxdepth 1 -type f -name "*.properties" -delete || true
           rm -rf "$DST/nginx" "$DST/postgres" || true
 
           mkdir -p "$DST/docker" "$DST/config-repo"
 
-          # fichiers compose à la racine
           rsync -av \
             "$SRC/docker-compose.yml" \
             "$SRC/docker-compose.prod.yml" \
             "$DST/"
 
-          # dossier docker -> $DST/docker
           rsync -av --delete \
             "$SRC/docker/" \
             "$DST/docker/"
 
-          # dossier config-repo -> $DST/config-repo
           rsync -av --delete \
             "$SRC/config-repo/" \
             "$DST/config-repo/"
+
 
       
       - name: Login to GHCR
