@@ -374,7 +374,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd "$HOME/smartevent-ia-infra"
+            cd "$HOME/tresor/smartevent-ia-infra"
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile ui up -d --remove-orphans
             docker ps
