@@ -330,11 +330,6 @@ jobs:
         run: |
           set -euxo pipefail
 
-          whoami
-          id
-          sudo -n true
-          sudo -n -l || true
-
           echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
           ls -la "$GITHUB_WORKSPACE" | head -200
           ls -la "$GITHUB_WORKSPACE/docker-compose.yml" || true
@@ -348,11 +343,11 @@ jobs:
           SRC="$GITHUB_WORKSPACE"
           DST="/home/tresor/smartevent-ia-infra"
 
-          sudo mkdir -p "$DST" "$DST/docker" "$DST/config-repo"
+          mkdir -p "$DST" "$DST/docker" "$DST/config-repo"
 
           echo "Cleaning $DST root *.properties + root nginx/postgres..."
           find "$DST" -maxdepth 1 -type f -name "*.properties" -delete || true
-          sudo rm -rf "$DST/nginx" "$DST/postgres" || true
+          rm -rf "$DST/nginx" "$DST/postgres" || true
 
           echo "Rsync compose files..."
           timeout 60 rsync -av --info=progress2 \
