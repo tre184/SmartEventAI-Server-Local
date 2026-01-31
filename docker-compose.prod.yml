@@ -19,8 +19,6 @@ services:
 
   eureka-server:
     image: ghcr.io/tre184/smarteventai-server-local-eureka-server:${IMAGE_TAG}
-
-    build: null
     container_name: smartevent_eureka
     ports:
       - "8761:8761"
@@ -36,7 +34,6 @@ services:
 
   config-server:
     image: ghcr.io/tre184/smarteventai-server-local-config-server:${IMAGE_TAG}
-    build: null
     container_name: smartevent_config
     ports:
       - "8888:8888"
@@ -60,7 +57,6 @@ services:
 
   auth-service:
     image: ghcr.io/tre184/smarteventai-server-local-auth-service:${IMAGE_TAG}
-    build: null
     container_name: smartevent_auth
     ports:
       - "8091:8091"
@@ -87,7 +83,6 @@ services:
 
   event-service:
     image: ghcr.io/tre184/smarteventai-server-local-event-service:${IMAGE_TAG}
-    build: null
     container_name: smartevent_event
     ports:
       - "8090:8090"
@@ -114,7 +109,6 @@ services:
 
   ai-service:
     image: ghcr.io/tre184/smarteventai-server-local-ai-service:${IMAGE_TAG}
-    build: null
     container_name: smartevent_ai
     ports:
       - "8000:8000"
@@ -139,7 +133,6 @@ services:
 
   workflow-service:
     image: ghcr.io/tre184/smarteventai-server-local-workflow-service:${IMAGE_TAG}
-    build: null
     container_name: smartevent_workflow
     ports:
       - "3000:3000"
@@ -167,7 +160,6 @@ services:
 
   gateway-service:
     image: ghcr.io/tre184/smarteventai-server-local-gateway-service:${IMAGE_TAG}
-    build: null
     container_name: smartevent_gateway
     ports:
       - "8080:8080"
@@ -208,7 +200,6 @@ services:
   # UI (optionnel). Active avec: docker compose --profile ui up
   front:
     image: ghcr.io/tre184/smarteventai-server-local-front:${IMAGE_TAG}
-    build: null
     profiles: ["ui"]
     container_name: smartevent_front
     ports:
@@ -219,7 +210,6 @@ services:
 
   frontadmin:
     image: ghcr.io/tre184/smarteventai-server-local-frontadmin:${IMAGE_TAG}
-    build: null
     profiles: ["ui"]
     container_name: smartevent_front_admin
     ports:
