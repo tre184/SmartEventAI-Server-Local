@@ -222,6 +222,7 @@ services:
 
   sonarqube-db:
     image: postgres:15
+    profiles: ["sonar"]
     container_name: sonarqube_db
     environment:
       POSTGRES_USER: sonar
@@ -232,6 +233,7 @@ services:
 
   sonarqube:
     image: sonarqube:community
+    profiles: ["sonar"]
     container_name: sonarqube
     depends_on:
       - sonarqube-db
