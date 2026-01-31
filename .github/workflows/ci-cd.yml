@@ -369,14 +369,15 @@ jobs:
         uses: appleboy/ssh-action@v1
         env:
           GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          IMAGE_TAG: dev-${{ github.sha }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          envs: GHCR_PAT
+          envs: GHCR_PAT,IMAGE_TAG
           script: |
             set -euxo pipefail
-            
+            test -n "$IMAGE_TAG"
             # login GHCR SUR LA VM
             echo "$GHCR_PAT" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
