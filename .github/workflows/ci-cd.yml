@@ -392,10 +392,5 @@ jobs:
           rm -rf "$RUNNER_WORKSPACE"/* || true 
           rm -rf /home/tresor/actions-runner/_diag/* || true
 
-      - name: Cleanup SSH key
-        if: always()
-        shell: bash
-        run: |
-          rm -f ~/.ssh/deploy_key
 
             
