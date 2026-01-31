@@ -386,6 +386,12 @@ jobs:
             docker compose -f docker-compose.prod.yml --profile ui up -d --remove-orphans
             docker ps
 
+      - name: Cleanup runner disk 
+        run: | 
+          docker system prune -af || true 
+          rm -rf "$RUNNER_WORKSPACE"/* || true 
+          rm -rf /home/tresor/actions-runner/_diag/* || true
+
       - name: Cleanup SSH key
         if: always()
         shell: bash
