@@ -368,16 +368,17 @@ jobs:
       - name: Deploy on VM (pull from GHCR)
         uses: appleboy/ssh-action@v1
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GHCR_PAT }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: GHCR_PAT
           script: |
             set -euxo pipefail
 
             # login GHCR SUR LA VM
-            echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            echo "$GHCR_PAT" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
             cd "$HOME/smartevent-ia-infra"
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
