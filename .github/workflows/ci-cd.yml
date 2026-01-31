@@ -368,7 +368,7 @@ jobs:
       - name: Deploy on VM (pull from GHCR)
         uses: appleboy/ssh-action@v1
         env:
-          GH_TOKEN: ${{ secrets.GHCR_PAT }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
@@ -376,7 +376,8 @@ jobs:
           envs: GHCR_PAT
           script: |
             set -euxo pipefail
-
+            # vérifie que le secret est bien passé
+            test -n "$GHCR_PAT"
             # login GHCR SUR LA VM
             echo "$GHCR_PAT" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
