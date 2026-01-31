@@ -376,13 +376,13 @@ jobs:
           envs: GHCR_PAT
           script: |
             set -euxo pipefail
-            export IMAGE_TAG="dev-${{ github.sha }}"
+            
             # login GHCR SUR LA VM
             echo "$GHCR_PAT" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
             cd "$HOME/smartevent-ia-infra"
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile ui up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml --profile ui up -d --remove-orphans
             docker ps
 
       - name: Cleanup SSH key
