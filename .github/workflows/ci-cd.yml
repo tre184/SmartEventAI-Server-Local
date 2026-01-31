@@ -325,53 +325,42 @@ jobs:
           docker system prune -af || true
           rm -rf "$RUNNER_WORKSPACE"/* || true
           rm -rf /home/tresor/actions-runner/_diag/* || true
-
+      
       - name: Sync infra files locally
-        shell: bash
         run: |
           set -euxo pipefail
           SRC="$GITHUB_WORKSPACE"
-          VM_USER="${{ secrets.DEPLOY_USER }}"
-          VM_HOST="${{ secrets.DEPLOY_HOST }}"
-          VM_DST="/home/tresor/smartevent-ia-infra"
-          KEY_FILE=~/.ssh/deploy_key
+          DST="/home/tresor/smartevent-ia-infra"
 
-          # Prépare les dossiers sur la VM
-          ssh -i "$KEY_FILE" "$VM_USER@$VM_HOST" "mkdir -p '$VM_DST/docker' '$VM_DST/config-repo'"
+          mkdir -p "$DST" "$DST/docker" "$DST/config-repo"
 
-          # Compose à la racine
-          rsync -avz --delete -e "ssh -i $KEY_FILE" \
+          # fichiers compose à la racine
+          rsync -av --delete \
             "$SRC/docker-compose.yml" \
             "$SRC/docker-compose.prod.yml" \
-            "$VM_USER@$VM_HOST:$VM_DST/"
+            "$DST/"
 
-          # docker/ (nginx, postgres) -> VM_DST/docker
-          rsync -avz --delete -e "ssh -i $KEY_FILE" \
+          # dossier docker -> $DST/docker
+          rsync -av --delete \
             "$SRC/docker/" \
-            "$VM_USER@$VM_HOST:$VM_DST/docker/"
+            "$DST/docker/"
 
-          # config-repo/ -> VM_DST/config-repo (tous les *.properties)
-          rsync -avz --delete -e "ssh -i $KEY_FILE" \
+          # dossier config-repo -> $DST/config-repo
+          rsync -av --delete \
             "$SRC/config-repo/" \
-            "$VM_USER@$VM_HOST:$VM_DST/config-repo/"
+            "$DST/config-repo/"
       
       - name: Login to GHCR
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u tre184 --password-stdin
 
-      - name: Deploy on VM (pull from GHCR)
+      - name: Deploy over SSH
         uses: appleboy/ssh-action@v1
-        env:
-          GH_TOKEN: ${{ github.token }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            set -euxo pipefail
-
-            # Login GHCR sur la VM
-            echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-            cd "$HOME/smartevent-ia-infra"
+            cd "$HOME/tresor/smartevent-ia-infra"
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile ui up -d --remove-orphans
             docker ps
