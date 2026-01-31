@@ -376,8 +376,7 @@ jobs:
           envs: GHCR_PAT
           script: |
             set -euxo pipefail
-            # vérifie que le secret est bien passé
-            test -n "$GHCR_PAT"
+            export IMAGE_TAG="dev-${{ github.sha }}"
             # login GHCR SUR LA VM
             echo "$GHCR_PAT" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
