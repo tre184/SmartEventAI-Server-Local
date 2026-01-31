@@ -314,54 +314,80 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: docker-build
+    permissions:
+      contents: read
+      packages: read
     env:
       IMAGE_TAG: dev-${{ github.sha }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cleanup runner disk
+      - name: Prepare SSH key for VM
+        shell: bash
         run: |
-          docker system prune -af || true
-          rm -rf "$RUNNER_WORKSPACE"/* || true
-          rm -rf /home/tresor/actions-runner/_diag/* || true
-      
-      - name: Sync infra files locally
+          set -euxo pipefail
+          mkdir -p ~/.ssh
+          KEY_FILE=~/.ssh/deploy_key
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Rsync infra to VM
+        shell: bash
         run: |
           set -euxo pipefail
           SRC="$GITHUB_WORKSPACE"
-          DST="/home/tresor/smartevent-ia-infra"
+          VM_USER="${{ secrets.DEPLOY_USER }}"
+          VM_HOST="${{ secrets.DEPLOY_HOST }}"
+          VM_DST="/home/tresor/smartevent-ia-infra"
+          KEY_FILE=~/.ssh/deploy_key
 
-          mkdir -p "$DST" "$DST/docker" "$DST/config-repo"
+          # créer dossiers côté VM
+          ssh -i "$KEY_FILE" "$VM_USER@$VM_HOST" "mkdir -p '$VM_DST/docker' '$VM_DST/config-repo'"
 
-          # fichiers compose à la racine
-          rsync -av --delete \
+          # compose files à la racine (sans --delete)
+          rsync -avz \
+            -e "ssh -i $KEY_FILE" \
             "$SRC/docker-compose.yml" \
             "$SRC/docker-compose.prod.yml" \
-            "$DST/"
+            "$VM_USER@$VM_HOST:$VM_DST/"
 
-          # dossier docker -> $DST/docker
-          rsync -av --delete \
+          # docker/ -> VM_DST/docker (avec --delete)
+          rsync -avz --delete \
+            -e "ssh -i $KEY_FILE" \
             "$SRC/docker/" \
-            "$DST/docker/"
+            "$VM_USER@$VM_HOST:$VM_DST/docker/"
 
-          # dossier config-repo -> $DST/config-repo
-          rsync -av --delete \
+          # config-repo/ -> VM_DST/config-repo (avec --delete)
+          rsync -avz --delete \
+            -e "ssh -i $KEY_FILE" \
             "$SRC/config-repo/" \
-            "$DST/config-repo/"
-      
-      - name: Login to GHCR
-        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u tre184 --password-stdin
+            "$VM_USER@$VM_HOST:$VM_DST/config-repo/"
 
-      - name: Deploy over SSH
+      - name: Deploy on VM (pull from GHCR)
         uses: appleboy/ssh-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd "$HOME/tresor/smartevent-ia-infra"
+            set -euxo pipefail
+
+            # login GHCR SUR LA VM
+            echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+            cd "$HOME/smartevent-ia-infra"
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile ui up -d --remove-orphans
             docker ps
+
+      - name: Cleanup SSH key
+        if: always()
+        shell: bash
+        run: |
+          rm -f ~/.ssh/deploy_key
+
             
